@@ -48,9 +48,9 @@ export default function Lab1() {
 
         My favorite recipe:
         <ol id="wd-your-favorite-recipe">
-          <li>Step one</li>
-          <li>Step two</li>
-          <li>Step three</li>
+          <li>Pour a glass of milk.</li>
+          <li>Dunk a cookie into the milk.</li>
+          <li>Bite and enjoy.</li>
         </ol>
       </div>
       <h5>Unordered List Tag</h5>
@@ -64,9 +64,9 @@ export default function Lab1() {
 
       Your favorite books (in no particular order)
       <ul id="wd-your-books">
-        <li>Book 1</li>
-        <li>Book 2</li>
-        <li>Book 3</li>
+        <li>Harry Potter</li>
+        <li>Adventure's Of TinTin</li>
+        <li>Ranger's Apprentice</li>
       </ul>
       <div id="wd-tables">
         <h4>Table Tag</h4>
