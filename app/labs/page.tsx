@@ -2,7 +2,10 @@ import Link from "next/link";
 
 export default function Labs() {
     return (
+
         <div id="wd-labs">
+            <h3>Xavier Galanes</h3>
+
             <h1>Labs</h1>
             <ul>
                 <li>
@@ -11,7 +14,7 @@ export default function Labs() {
                     </Link>
                 </li>
                 <li>
-                    <a href="/kambaz" id="wd-kambaz-link">
+                    <a href="/" id="wd-kambaz-link">
                         Kambaz
                     </a>
                 </li>
