@@ -1,7 +1,27 @@
 export default function Modules() {
     return (
       <div>
-        {/* Implement Collapse All button, View Progress button, etc. */}
+        {/* Top action buttons */}
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary">
+              Collapse All
+            </button>
+            <button className="btn btn-outline-secondary">
+              View Progress
+            </button>
+          </div>
+  
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary">
+              Publish All
+            </button>
+            <button className="btn btn-danger">
+              + Module
+            </button>
+          </div>
+        </div>
+  
         <ul id="wd-modules">
           <li className="wd-module">
             <div className="wd-title">Week 1</div>

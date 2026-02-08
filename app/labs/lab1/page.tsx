@@ -140,7 +140,22 @@ export default function Lab1() {
 
           <label htmlFor="wd-password">Password:</label>
           <input id="wd-password" type="password" defaultValue="123@#$asd" /><br />
-
+          <label htmlFor="firstName">First Name</label>
+          <input
+            id="firstName"
+            name="firstName"
+            type="text"
+            placeholder="First name"
+          />
+          <br />
+          <label htmlFor="lastName">Last Name</label>
+          <input
+            id="lastName"
+            name="lastName"
+            type="text"
+            placeholder="Last name"
+          />
+          <br />
           <label>Biography:</label><br />
           <textarea id="wd-textarea" cols={30} rows={10}>
             Lorem ipsum dolor sit amet.
@@ -149,16 +164,35 @@ export default function Lab1() {
           <h5 id="wd-radio-buttons">Radio buttons</h5>
           <input type="radio" name="genre" /> Comedy<br />
           <input type="radio" name="genre" /> Drama<br />
+          <input type="radio" name="genre" value="SciFi" /> SciFi <br />
+          <input type="radio" name="genre" value="Fantasy" /> Fantasy <br />
+
 
           <h5 id="wd-checkboxes">Checkboxes</h5>
           <input type="checkbox" /> Sci-Fi<br />
           <input type="checkbox" /> Fantasy<br />
+          <input type="checkbox" /> Comedy <br />
+          <input type="checkbox" /> Drama <br />
 
           <h4 id="wd-dropdowns">Dropdowns</h4>
-          <select>
-            <option>Comedy</option>
-            <option>Drama</option>
-            <option selected>Science Fiction</option>
+
+          <h5>Select one</h5>
+          <label htmlFor="wd-select-one-genre"> Favorite movie genre: </label><br />
+          <select id="wd-select-one-genre">
+            <option value="COMEDY">Comedy</option>
+            <option value="DRAMA">Drama</option>
+            <option selected value="SCIFI">
+              Science Fiction</option>
+            <option value="FANTASY">Fantasy</option>
+          </select>
+
+          <h5>Select many</h5>
+          <label htmlFor="wd-select-many-genre"> Favorite movie genres: </label><br />
+          <select multiple id="wd-select-many-genre">
+            <option value="COMEDY" selected> Comedy          </option>
+            <option value="DRAMA">           Drama           </option>
+            <option value="SCIFI" selected> Science Fiction </option>
+            <option value="FANTASY">         Fantasy         </option>
           </select>
         </form>
       </div>
