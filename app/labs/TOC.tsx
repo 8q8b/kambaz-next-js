@@ -1,22 +1,30 @@
+"use client";
+
 import Link from "next/link";
+import { Nav } from "react-bootstrap";
+
 export default function TOC() {
- return (
-   <ul>
-     <li>
-       <Link href="/labs" id="wd-home-link">
-         Home </Link>
-     </li>
-     <li>
-       <Link href="/labs/lab1" id="wd-lab1-link">
-         Lab 1 </Link>
-     </li>
-     <li>
-       <Link href="/labs/lab2" id="wd-lab2-link">
-         Lab 2 </Link>
-     </li>
-     <li>
-       <Link href="/labs/lab3" id="wd-lab3-link">
-         Lab 3 </Link>
-     </li>
-   </ul>
-);}
+  return (
+    <Nav variant="pills" className="gap-2">
+      <Nav.Link as={Link} href="/labs">
+        Labs
+      </Nav.Link>
+
+      <Nav.Link as={Link} href="/labs/lab1">
+        Lab 1
+      </Nav.Link>
+
+      <Nav.Link as={Link} href="/labs/lab2">
+        Lab 2
+      </Nav.Link>
+
+      <Nav.Link as={Link} href="/labs/lab3">
+        Lab 3
+      </Nav.Link>
+
+      <Nav.Link as={Link} href="/">
+        Kambaz
+      </Nav.Link>
+    </Nav>
+  );
+}

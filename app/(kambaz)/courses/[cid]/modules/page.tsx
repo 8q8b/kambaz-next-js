@@ -1,84 +1,95 @@
+import { ListGroup, ListGroupItem } from "react-bootstrap";
+import ModulesControls from "./ModulesControls";
+
 export default function Modules() {
-    return (
-      <div>
-        {/* Top action buttons */}
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div className="d-flex gap-2">
-            <button className="btn btn-outline-secondary">
-              Collapse All
-            </button>
-            <button className="btn btn-outline-secondary">
-              View Progress
-            </button>
-          </div>
-  
-          <div className="d-flex gap-2">
-            <button className="btn btn-outline-secondary">
-              Publish All
-            </button>
-            <button className="btn btn-danger">
-              + Module
-            </button>
-          </div>
-        </div>
-  
-        <ul id="wd-modules">
-          <li className="wd-module">
-            <div className="wd-title">Week 1</div>
-            <ul className="wd-lessons">
-              <li className="wd-lesson">
-                <span className="wd-title">LEARNING OBJECTIVES</span>
-                <ul className="wd-content">
-                  <li className="wd-content-item">Introduction to the course</li>
-                  <li className="wd-content-item">Learn what is Web Development</li>
-                </ul>
-              </li>
-  
-              <li className="wd-lesson">
-                <span className="wd-title">READING</span>
-                <ul className="wd-content">
-                  <li className="wd-content-item">Full Stack Developer - Chapter 1</li>
-                  <li className="wd-content-item">Full Stack Developer - Chapter 2</li>
-                </ul>
-              </li>
-  
-              <li className="wd-lesson">
-                <span className="wd-title">SLIDES</span>
-                <ul className="wd-content">
-                  <li className="wd-content-item">Introduction to Web Development</li>
-                  <li className="wd-content-item">Creating an HTTP server with Node.js</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-  
-          <li className="wd-module">
-            <div className="wd-title">Week 2</div>
-            <ul className="wd-lessons">
-              <li className="wd-lesson">
-                <span className="wd-title">LEARNING OBJECTIVES</span>
-                <ul className="wd-content">
-                  <li className="wd-content-item">Learn how to create user interfaces</li>
-                  <li className="wd-content-item">Learn how to style with CSS</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-  
-          <li className="wd-module">
-            <div className="wd-title">Week 3</div>
-            <ul className="wd-lessons">
-              <li className="wd-lesson">
-                <span className="wd-title">LEARNING OBJECTIVES</span>
-                <ul className="wd-content">
-                  <li className="wd-content-item">Learn JavaScript basics</li>
-                  <li className="wd-content-item">Learn DOM manipulation</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    );
-  }
-  
+  return (
+    <div id="wd-modules">
+      <ModulesControls />
+      <br />
+      <br />
+
+      <ListGroup className="rounded-0" id="wd-modules-list">
+        {/* Week 1 */}
+        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
+          <div className="wd-title p-3 ps-2 bg-secondary">Week 1</div>
+
+          <ListGroup className="wd-lessons rounded-0">
+            <ListGroupItem className="wd-lesson p-3 ps-1">
+              <span className="wd-title">LEARNING OBJECTIVES</span>
+              <ListGroup className="wd-content rounded-0 mt-2">
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Introduction to the course
+                </ListGroupItem>
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Learn what is Web Development
+                </ListGroupItem>
+              </ListGroup>
+            </ListGroupItem>
+
+            <ListGroupItem className="wd-lesson p-3 ps-1">
+              <span className="wd-title">READING</span>
+              <ListGroup className="wd-content rounded-0 mt-2">
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Full Stack Developer - Chapter 1
+                </ListGroupItem>
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Full Stack Developer - Chapter 2
+                </ListGroupItem>
+              </ListGroup>
+            </ListGroupItem>
+
+            <ListGroupItem className="wd-lesson p-3 ps-1">
+              <span className="wd-title">SLIDES</span>
+              <ListGroup className="wd-content rounded-0 mt-2">
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Introduction to Web Development
+                </ListGroupItem>
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Creating an HTTP server with Node.js
+                </ListGroupItem>
+              </ListGroup>
+            </ListGroupItem>
+          </ListGroup>
+        </ListGroupItem>
+
+        {/* Week 2 */}
+        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
+          <div className="wd-title p-3 ps-2 bg-secondary">Week 2</div>
+
+          <ListGroup className="wd-lessons rounded-0">
+            <ListGroupItem className="wd-lesson p-3 ps-1">
+              <span className="wd-title">LEARNING OBJECTIVES</span>
+              <ListGroup className="wd-content rounded-0 mt-2">
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Learn how to create user interfaces
+                </ListGroupItem>
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Learn how to style with CSS
+                </ListGroupItem>
+              </ListGroup>
+            </ListGroupItem>
+          </ListGroup>
+        </ListGroupItem>
+
+        {/* Week 3 */}
+        <ListGroupItem className="wd-module p-0 mb-5 fs-5 border-gray">
+          <div className="wd-title p-3 ps-2 bg-secondary">Week 3</div>
+
+          <ListGroup className="wd-lessons rounded-0">
+            <ListGroupItem className="wd-lesson p-3 ps-1">
+              <span className="wd-title">LEARNING OBJECTIVES</span>
+              <ListGroup className="wd-content rounded-0 mt-2">
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Learn JavaScript basics
+                </ListGroupItem>
+                <ListGroupItem className="wd-content-item border-0 ps-3">
+                  Learn DOM manipulation
+                </ListGroupItem>
+              </ListGroup>
+            </ListGroupItem>
+          </ListGroup>
+        </ListGroupItem>
+      </ListGroup>
+    </div>
+  );
+}

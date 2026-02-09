@@ -14,6 +14,11 @@ export default function Labs() {
                     </Link>
                 </li>
                 <li>
+                    <Link href="/labs/lab2" id="wd-lab2-link">
+                        Lab 2: Cascading Style Sheet
+                    </Link>
+                </li>
+                <li>
                     <a href="/" id="wd-kambaz-link">
                         Kambaz
                     </a>

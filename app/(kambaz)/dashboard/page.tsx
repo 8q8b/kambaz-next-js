@@ -1,98 +1,94 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Button, Card, CardBody, CardImg, CardText, CardTitle, Col, Row } from "react-bootstrap";
 
 export default function Dashboard() {
+  const courses = [
+    {
+      id: "1234",
+      code: "CS1234",
+      name: "React JS",
+      desc: "Full Stack software developer",
+      img: "/images/reactjs.jpg",
+    },
+    {
+      id: "2345",
+      code: "CS2345",
+      name: "Node JS",
+      desc: "Backend development",
+      img: "/images/nodejs.jpg",
+    },
+    {
+      id: "3456",
+      code: "CS3456",
+      name: "MongoDB",
+      desc: "NoSQL databases",
+      img: "/images/mongodb.jpg",
+    },
+    {
+      id: "4567",
+      code: "CS4567",
+      name: "TypeScript",
+      desc: "Typed JavaScript",
+      img: "/images/typescript.jpg",
+    },
+    {
+      id: "5678",
+      code: "CS5678",
+      name: "Web Security",
+      desc: "Secure web apps",
+      img: "/images/security.jpg",
+    },
+    {
+      id: "6789",
+      code: "CS6789",
+      name: "UI/UX",
+      desc: "Design better interfaces",
+      img: "/images/uiux.jpg",
+    },
+    {
+      id: "7890",
+      code: "CS7890",
+      name: "DevOps",
+      desc: "Deploy and scale",
+      img: "/images/devops.jpg",
+    },
+  ];
+
   return (
-    <div id="wd-dashboard">
+    <div id="wd-dashboard" className="p-4">
       <h1 id="wd-dashboard-title">Dashboard</h1>
       <hr />
-      <h2 id="wd-dashboard-published">Published Courses (7)</h2>
+
+      <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2>
       <hr />
 
       <div id="wd-dashboard-courses">
-        {/* Course 1 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/1234" className="wd-dashboard-course-link">
-            <Image src="/images/reactjs.jpg" width={200} height={150} alt="reactjs" />
-            <div>
-              <h5>CS1234 React JS</h5>
-              <p className="wd-dashboard-course-title">Full Stack software developer</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+        <Row xs={1} md={2} lg={3} xl={4} className="g-4">
+          {courses.map((course) => (
+            <Col key={course.id} className="wd-dashboard-course" style={{ maxWidth: 300 }}>
+              <Card className="h-100">
+                <Link
+                  href={`/courses/${course.id}/home`}
+                  className="wd-dashboard-course-link text-decoration-none text-dark"
+                >
+                  <CardImg variant="top" src={course.img} />
 
-        {/* Course 2 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/2345" className="wd-dashboard-course-link">
-            <Image src="/images/nodejs.jpg" width={200} height={150} alt="nodejs" />
-            <div>
-              <h5>CS2345 Node JS</h5>
-              <p className="wd-dashboard-course-title">Backend development</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+                  <CardBody>
+                    <CardTitle>
+                      {course.code} {course.name}
+                    </CardTitle>
 
-        {/* Course 3 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/3456" className="wd-dashboard-course-link">
-            <Image src="/images/mongodb.jpg" width={200} height={150} alt="mongodb" />
-            <div>
-              <h5>CS3456 MongoDB</h5>
-              <p className="wd-dashboard-course-title">NoSQL databases</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+                    <CardText className="wd-dashboard-course-title">
+                      {course.desc}
+                    </CardText>
 
-        {/* Course 4 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/4567" className="wd-dashboard-course-link">
-            <Image src="/images/typescript.jpg" width={200} height={150} alt="typescript" />
-            <div>
-              <h5>CS4567 TypeScript</h5>
-              <p className="wd-dashboard-course-title">Typed JavaScript</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
-
-        {/* Course 5 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/5678" className="wd-dashboard-course-link">
-            <Image src="/images/security.jpg" width={200} height={150} alt="security" />
-            <div>
-              <h5>CS5678 Web Security</h5>
-              <p className="wd-dashboard-course-title">Secure web apps</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
-
-        {/* Course 6 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/6789" className="wd-dashboard-course-link">
-            <Image src="/images/uiux.jpg" width={200} height={150} alt="uiux" />
-            <div>
-              <h5>CS6789 UI/UX</h5>
-              <p className="wd-dashboard-course-title">Design better interfaces</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
-
-        {/* Course 7 */}
-        <div className="wd-dashboard-course">
-          <Link href="/courses/7890" className="wd-dashboard-course-link">
-            <Image src="/images/devops.jpg" width={200} height={150} alt="devops" />
-            <div>
-              <h5>CS7890 DevOps</h5>
-              <p className="wd-dashboard-course-title">Deploy and scale</p>
-              <button>Go</button>
-            </div>
-          </Link>
-        </div>
+                    <Button variant="primary">Go</Button>
+                  </CardBody>
+                </Link>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </div>
     </div>
   );
