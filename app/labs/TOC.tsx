@@ -25,6 +25,9 @@ export default function TOC() {
       <Nav.Link as={Link} href="/">
         Kambaz
       </Nav.Link>
+      <Nav.Link href="https://github.com/8q8b/kambaz-next-js">
+        Xavier Galanes GitHub
+      </Nav.Link>
     </Nav>
   );
 }
