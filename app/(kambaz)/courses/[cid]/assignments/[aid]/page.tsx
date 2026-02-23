@@ -1,12 +1,42 @@
+"use client";
+
 import Link from "next/link";
 import { FormControl } from "react-bootstrap";
+import { useParams } from "next/navigation";
+import * as db from "../../../../database";
+
+type Assignment = {
+  _id: string;
+  title: string;
+  course: string;
+  description?: string;
+  points?: number;
+  dueDate?: string;
+  availableFrom?: string;
+};
 
 export default function AssignmentEditor() {
+  const { cid, aid } = useParams();
+  const assignment = (db.assignments as Assignment[]).find((a) => a._id === aid);
+
+  if (!assignment) {
+    return (
+      <div id="wd-assignment-editor" className="p-3">
+        <p className="text-muted">Assignment not found.</p>
+        {cid && (
+          <Link href={`/courses/${cid}/assignments`} className="btn btn-secondary">
+            Back to Assignments
+          </Link>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div id="wd-assignment-editor" className="p-3">
       <div className="d-flex justify-content-end mb-3">
         <Link
-          href="/courses/1234/assignments"
+          href={`/courses/${cid}/assignments`}
           className="btn btn-secondary me-2"
           id="wd-assignment-cancel"
         >
@@ -14,7 +44,7 @@ export default function AssignmentEditor() {
         </Link>
 
         <Link
-          href="/courses/1234/assignments"
+          href={`/courses/${cid}/assignments`}
           className="btn btn-danger"
           id="wd-assignment-save"
         >
@@ -29,7 +59,7 @@ export default function AssignmentEditor() {
       <FormControl
         id="wd-name"
         className="mb-3"
-        defaultValue="A1 - ENV + HTML"
+        defaultValue={assignment.title}
       />
 
       {/* Description */}
@@ -40,15 +70,19 @@ export default function AssignmentEditor() {
         id="wd-description"
         className="form-control mb-3"
         rows={6}
-        defaultValue={`This assignment is an introduction to the course environment, tools, and basic HTML.
-You can edit this later when assignments become dynamic.`}
+        defaultValue={assignment.description ?? ""}
       />
 
       {/* Points */}
       <label htmlFor="wd-points" className="form-label fw-bold">
         Points
       </label>
-      <FormControl id="wd-points" className="mb-3" type="number" defaultValue={100} />
+      <FormControl
+        id="wd-points"
+        className="mb-3"
+        type="number"
+        defaultValue={assignment.points ?? 100}
+      />
 
       {/* Assignment Group */}
       <label htmlFor="wd-group" className="form-label fw-bold">
@@ -137,7 +171,12 @@ You can edit this later when assignments become dynamic.`}
         <label htmlFor="wd-due-date" className="form-label">
           Due
         </label>
-        <FormControl id="wd-due-date" className="mb-3" type="date" defaultValue="2026-05-13" />
+        <FormControl
+          id="wd-due-date"
+          className="mb-3"
+          type="date"
+          defaultValue={assignment.dueDate ?? "2026-05-13"}
+        />
 
         <div className="row">
           <div className="col-md-6">
@@ -148,7 +187,7 @@ You can edit this later when assignments become dynamic.`}
               id="wd-available-from"
               className="mb-3"
               type="date"
-              defaultValue="2026-05-06"
+              defaultValue={assignment.availableFrom ?? "2026-05-06"}
             />
           </div>
 
