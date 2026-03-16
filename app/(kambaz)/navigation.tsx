@@ -10,7 +10,7 @@ export default function KambazNavigation() {
   const pathname = usePathname();
   const links = [
     { label: "Dashboard", path: "/dashboard", icon: AiOutlineDashboard },
-    { label: "Courses", path: "/dashboard", icon: LiaBookSolid },
+    { label: "Courses", path: "/courses", icon: LiaBookSolid },
     { label: "Calendar", path: "/Calendar", icon: IoCalendarOutline },
     { label: "Inbox", path: "/Inbox", icon: FaInbox },
     { label: "Labs", path: "/labs", icon: LiaCogSolid },
@@ -31,7 +31,7 @@ export default function KambazNavigation() {
         Account
       </ListGroupItem>
       {links.map((link) => (
-        <ListGroupItem key={link.path} as={Link} href={link.path}
+        <ListGroupItem key={link.label} as={Link} href={link.path}
           className={`bg-black text-center border-0
      ${pathname.includes(link.label) ? "text-danger bg-white" : "text-white bg-black"}`}>
           {link.icon({ className: "fs-1 text-danger" })}

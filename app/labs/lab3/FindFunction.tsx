@@ -10,4 +10,3 @@ export default function FindFunction() {
         string3 = {string3} <hr />
       </div>
   );}
-  

@@ -7,11 +7,15 @@ import {
   InputGroup,
   ListGroup,
   ListGroupItem,
+  Modal,
 } from "react-bootstrap";
-import { FaEllipsisV, FaGripVertical, FaSearch } from "react-icons/fa";
+import { FaEllipsisV, FaGripVertical, FaSearch, FaTrash } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa6";
 import { useParams } from "next/navigation";
-import * as db from "../../../database";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../store";
+import { deleteAssignment } from "./reducer";
+import { useState } from "react";
 
 function formatDate(dateStr: string, time: string): string {
   const d = new Date(dateStr);
@@ -29,13 +33,31 @@ type Assignment = {
   points?: number;
   dueDate?: string;
   availableFrom?: string;
+  availableUntil?: string;
 };
 
 export default function Assignments() {
   const { cid } = useParams();
-  const courseAssignments = (db.assignments as Assignment[]).filter(
+  const dispatch = useDispatch();
+  const { assignments } = useSelector(
+    (state: RootState) => state.assignmentsReducer
+  );
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const isFaculty =
+    currentUser && (currentUser as any).role === "FACULTY";
+
+  const courseAssignments = (assignments as Assignment[]).filter(
     (a) => a.course === cid
   );
+
+  const handleDeleteConfirm = () => {
+    if (deleteConfirmId) {
+      dispatch(deleteAssignment(deleteConfirmId));
+      setDeleteConfirmId(null);
+    }
+  };
 
   return (
     <div id="wd-assignments" className="p-3">
@@ -61,15 +83,19 @@ export default function Assignments() {
             Group
           </Button>
 
-          <Button
-            variant="danger"
-            size="lg"
-            className="float-end"
-            id="wd-add-assignment"
-          >
-            <FaPlus className="me-2" />
-            Assignment
-          </Button>
+          {isFaculty && (
+            <Link href={`/courses/${cid}/assignments/new`}>
+              <Button
+                variant="danger"
+                size="lg"
+                className="float-end"
+                id="wd-add-assignment"
+              >
+                <FaPlus className="me-2" />
+                Assignment
+              </Button>
+            </Link>
+          )}
 
           <div className="clearfix" />
         </div>
@@ -108,7 +134,17 @@ export default function Assignments() {
                   </div>
                 </div>
 
-                <div className="text-muted">
+                <div className="d-flex align-items-center text-muted">
+                  {isFaculty && (
+                    <FaTrash
+                      className="text-danger me-2 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setDeleteConfirmId(assignment._id);
+                      }}
+                      id={`wd-delete-assignment-${assignment._id}`}
+                    />
+                  )}
                   <FaEllipsisV />
                 </div>
               </ListGroupItem>
@@ -116,6 +152,34 @@ export default function Assignments() {
           </ListGroup>
         </ListGroupItem>
       </ListGroup>
+
+      <Modal
+        show={deleteConfirmId !== null}
+        onHide={() => setDeleteConfirmId(null)}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Remove Assignment</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to remove this assignment?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setDeleteConfirmId(null)}
+            id="wd-delete-assignment-cancel"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleDeleteConfirm}
+            id="wd-delete-assignment-confirm"
+          >
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

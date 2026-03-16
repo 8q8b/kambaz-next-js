@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormControl } from "react-bootstrap";
-import { useParams } from "next/navigation";
-import * as db from "../../../../database";
+import { Button, FormControl } from "react-bootstrap";
+import { useParams, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../../../../store";
+import { addAssignment, updateAssignment } from "../reducer";
+import { useState, useEffect } from "react";
 
 type Assignment = {
   _id: string;
@@ -13,13 +16,61 @@ type Assignment = {
   points?: number;
   dueDate?: string;
   availableFrom?: string;
+  availableUntil?: string;
+};
+
+const emptyForm = {
+  name: "",
+  description: "",
+  points: 100,
+  dueDate: "",
+  availableFrom: "",
+  availableUntil: "",
 };
 
 export default function AssignmentEditor() {
   const { cid, aid } = useParams();
-  const assignment = (db.assignments as Assignment[]).find((a) => a._id === aid);
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { assignments } = useSelector(
+    (state: RootState) => state.assignmentsReducer
+  );
+  const { currentUser } = useSelector((state: RootState) => state.accountReducer);
+  const isFaculty = currentUser && (currentUser as any).role === "FACULTY";
 
-  if (!assignment) {
+  const isNew = aid === "new";
+  const assignment = !isNew
+    ? (assignments as Assignment[]).find((a) => a._id === aid)
+    : null;
+
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (isNew && !isFaculty && cid) {
+      router.replace(`/courses/${cid}/assignments`);
+    }
+  }, [isNew, isFaculty, cid, router]);
+
+  useEffect(() => {
+    if (assignment) {
+      setForm({
+        name: assignment.title ?? "",
+        description: assignment.description ?? "",
+        points: assignment.points ?? 100,
+        dueDate: assignment.dueDate ?? "",
+        availableFrom: assignment.availableFrom ?? "",
+        availableUntil: assignment.availableUntil ?? "",
+      });
+    } else if (isNew) {
+      setForm(emptyForm);
+    }
+  }, [assignment, isNew]);
+
+  if (isNew && !isFaculty) {
+    return null;
+  }
+
+  if (!isNew && !assignment) {
     return (
       <div id="wd-assignment-editor" className="p-3">
         <p className="text-muted">Assignment not found.</p>
@@ -32,24 +83,63 @@ export default function AssignmentEditor() {
     );
   }
 
+  const readOnly = !isFaculty;
+
+  const handleSave = () => {
+    if (!cid) return;
+    if (isNew) {
+      dispatch(
+        addAssignment({
+          title: form.name,
+          name: form.name,
+          course: cid,
+          description: form.description,
+          points: form.points,
+          dueDate: form.dueDate,
+          availableFrom: form.availableFrom,
+          availableUntil: form.availableUntil,
+        })
+      );
+    } else {
+      dispatch(
+        updateAssignment({
+          ...assignment!,
+          title: form.name,
+          description: form.description,
+          points: form.points,
+          dueDate: form.dueDate,
+          availableFrom: form.availableFrom,
+          availableUntil: form.availableUntil,
+        })
+      );
+    }
+    router.push(`/courses/${cid}/assignments`);
+  };
+
+  const handleCancel = () => {
+    if (cid) router.push(`/courses/${cid}/assignments`);
+  };
+
   return (
     <div id="wd-assignment-editor" className="p-3">
       <div className="d-flex justify-content-end mb-3">
-        <Link
-          href={`/courses/${cid}/assignments`}
-          className="btn btn-secondary me-2"
+        <Button
+          variant="secondary"
+          className="me-2"
           id="wd-assignment-cancel"
+          onClick={handleCancel}
         >
-          Cancel
-        </Link>
-
-        <Link
-          href={`/courses/${cid}/assignments`}
-          className="btn btn-danger"
-          id="wd-assignment-save"
-        >
-          Save
-        </Link>
+          {readOnly ? "Back" : "Cancel"}
+        </Button>
+        {!readOnly && (
+          <Button
+            variant="danger"
+            id="wd-assignment-save"
+            onClick={handleSave}
+          >
+            Save
+          </Button>
+        )}
       </div>
 
       {/* Assignment Name */}
@@ -59,7 +149,9 @@ export default function AssignmentEditor() {
       <FormControl
         id="wd-name"
         className="mb-3"
-        defaultValue={assignment.title}
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        readOnly={readOnly}
       />
 
       {/* Description */}
@@ -70,7 +162,9 @@ export default function AssignmentEditor() {
         id="wd-description"
         className="form-control mb-3"
         rows={6}
-        defaultValue={assignment.description ?? ""}
+        value={form.description}
+        onChange={(e) => setForm({ ...form, description: e.target.value })}
+        readOnly={readOnly}
       />
 
       {/* Points */}
@@ -81,7 +175,12 @@ export default function AssignmentEditor() {
         id="wd-points"
         className="mb-3"
         type="number"
-        defaultValue={assignment.points ?? 100}
+        value={form.points}
+        onChange={(e) => {
+          const n = parseInt(e.target.value, 10);
+          setForm({ ...form, points: isNaN(n) ? 0 : n });
+        }}
+        readOnly={readOnly}
       />
 
       {/* Assignment Group */}
@@ -175,7 +274,9 @@ export default function AssignmentEditor() {
           id="wd-due-date"
           className="mb-3"
           type="date"
-          defaultValue={assignment.dueDate ?? "2026-05-13"}
+          value={form.dueDate}
+          onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+          readOnly={readOnly}
         />
 
         <div className="row">
@@ -187,7 +288,9 @@ export default function AssignmentEditor() {
               id="wd-available-from"
               className="mb-3"
               type="date"
-              defaultValue={assignment.availableFrom ?? "2026-05-06"}
+              value={form.availableFrom}
+              onChange={(e) => setForm({ ...form, availableFrom: e.target.value })}
+              readOnly={readOnly}
             />
           </div>
 
@@ -199,7 +302,9 @@ export default function AssignmentEditor() {
               id="wd-until"
               className="mb-3"
               type="date"
-              defaultValue="2026-05-20"
+              value={form.availableUntil}
+              onChange={(e) => setForm({ ...form, availableUntil: e.target.value })}
+              readOnly={readOnly}
             />
           </div>
         </div>
