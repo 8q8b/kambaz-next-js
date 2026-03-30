@@ -14,8 +14,9 @@ import { FaPlus } from "react-icons/fa6";
 import { useParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../store";
-import { deleteAssignment } from "./reducer";
-import { useState } from "react";
+import { setAssignments } from "./reducer";
+import { useState, useEffect } from "react";
+import * as client from "./client";
 
 function formatDate(dateStr: string, time: string): string {
   const d = new Date(dateStr);
@@ -37,13 +38,29 @@ type Assignment = {
 };
 
 export default function Assignments() {
-  const { cid } = useParams();
+  const params = useParams();
+  const cid =
+    typeof params.cid === "string"
+      ? params.cid
+      : Array.isArray(params.cid)
+        ? params.cid[0]
+        : undefined;
   const dispatch = useDispatch();
   const { assignments } = useSelector(
     (state: RootState) => state.assignmentsReducer
   );
   const { currentUser } = useSelector((state: RootState) => state.accountReducer);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const fetchAssignments = async () => {
+    if (!cid) return;
+    const list = await client.findAssignmentsForCourse(cid);
+    dispatch(setAssignments(list));
+  };
+
+  useEffect(() => {
+    fetchAssignments();
+  }, [cid]);
 
   const isFaculty =
     currentUser && (currentUser as any).role === "FACULTY";
@@ -52,11 +69,13 @@ export default function Assignments() {
     (a) => a.course === cid
   );
 
-  const handleDeleteConfirm = () => {
-    if (deleteConfirmId) {
-      dispatch(deleteAssignment(deleteConfirmId));
-      setDeleteConfirmId(null);
-    }
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return;
+    await client.deleteAssignment(deleteConfirmId);
+    dispatch(
+      setAssignments(assignments.filter((a: Assignment) => a._id !== deleteConfirmId))
+    );
+    setDeleteConfirmId(null);
   };
 
   return (

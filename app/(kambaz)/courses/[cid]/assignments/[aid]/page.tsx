@@ -5,8 +5,9 @@ import { Button, FormControl } from "react-bootstrap";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../../store";
-import { addAssignment, updateAssignment } from "../reducer";
+import { setAssignments } from "../reducer";
 import { useState, useEffect } from "react";
+import * as client from "../client";
 
 type Assignment = {
   _id: string;
@@ -29,7 +30,19 @@ const emptyForm = {
 };
 
 export default function AssignmentEditor() {
-  const { cid, aid } = useParams();
+  const params = useParams();
+  const cid =
+    typeof params.cid === "string"
+      ? params.cid
+      : Array.isArray(params.cid)
+        ? params.cid[0]
+        : undefined;
+  const aid =
+    typeof params.aid === "string"
+      ? params.aid
+      : Array.isArray(params.aid)
+        ? params.aid[0]
+        : undefined;
   const router = useRouter();
   const dispatch = useDispatch();
   const { assignments } = useSelector(
@@ -44,12 +57,30 @@ export default function AssignmentEditor() {
     : null;
 
   const [form, setForm] = useState(emptyForm);
+  const [assignmentsLoaded, setAssignmentsLoaded] = useState(false);
 
   useEffect(() => {
     if (isNew && !isFaculty && cid) {
       router.replace(`/courses/${cid}/assignments`);
     }
   }, [isNew, isFaculty, cid, router]);
+
+  useEffect(() => {
+    if (!cid) return;
+    let cancelled = false;
+    const load = async () => {
+      setAssignmentsLoaded(false);
+      const list = await client.findAssignmentsForCourse(cid);
+      if (!cancelled) {
+        dispatch(setAssignments(list));
+        setAssignmentsLoaded(true);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [cid, dispatch]);
 
   useEffect(() => {
     if (assignment) {
@@ -70,7 +101,7 @@ export default function AssignmentEditor() {
     return null;
   }
 
-  if (!isNew && !assignment) {
+  if (!isNew && assignmentsLoaded && !assignment) {
     return (
       <div id="wd-assignment-editor" className="p-3">
         <p className="text-muted">Assignment not found.</p>
@@ -83,34 +114,44 @@ export default function AssignmentEditor() {
     );
   }
 
+  if (!isNew && !assignmentsLoaded) {
+    return (
+      <div id="wd-assignment-editor" className="p-3">
+        <p className="text-muted">Loading…</p>
+      </div>
+    );
+  }
+
   const readOnly = !isFaculty;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!cid) return;
     if (isNew) {
-      dispatch(
-        addAssignment({
-          title: form.name,
-          name: form.name,
-          course: cid,
-          description: form.description,
-          points: form.points,
-          dueDate: form.dueDate,
-          availableFrom: form.availableFrom,
-          availableUntil: form.availableUntil,
-        })
-      );
+      const newAssignment = await client.createAssignmentForCourse(cid, {
+        title: form.name,
+        description: form.description,
+        points: form.points,
+        dueDate: form.dueDate,
+        availableFrom: form.availableFrom,
+        availableUntil: form.availableUntil,
+      });
+      dispatch(setAssignments([...assignments, newAssignment]));
     } else {
+      const updated = await client.updateAssignment({
+        ...assignment!,
+        title: form.name,
+        description: form.description,
+        points: form.points,
+        dueDate: form.dueDate,
+        availableFrom: form.availableFrom,
+        availableUntil: form.availableUntil,
+      });
       dispatch(
-        updateAssignment({
-          ...assignment!,
-          title: form.name,
-          description: form.description,
-          points: form.points,
-          dueDate: form.dueDate,
-          availableFrom: form.availableFrom,
-          availableUntil: form.availableUntil,
-        })
+        setAssignments(
+          assignments.map((a) =>
+            a._id === updated._id ? updated : a
+          )
+        )
       );
     }
     router.push(`/courses/${cid}/assignments`);

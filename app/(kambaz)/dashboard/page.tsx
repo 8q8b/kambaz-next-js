@@ -1,6 +1,6 @@
 "use client";
-
-import { useState } from "react";
+import * as client from "../courses/client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Button,
@@ -18,8 +18,10 @@ import {
   addNewCourse,
   deleteCourse,
   updateCourse,
+  setCourses,
 } from "../courses/reducer";
-import { addEnrollment, removeEnrollment } from "../enrollments/reducer";
+import { setEnrollments } from "../enrollments/reducer";
+import * as enrollmentsClient from "../enrollments/client";
 import { RootState } from "../store";
 
 export default function Dashboard() {
@@ -50,6 +52,32 @@ export default function Dashboard() {
     enrollments.some(
       (e: any) => e.user === (currentUser as any)._id && e.course === courseId
     );
+  const fetchCourses = async () => {
+    try {
+      const courses = await client.findMyCourses();
+      dispatch(setCourses(courses));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchEnrollments = async () => {
+    if (!currentUser) {
+      dispatch(setEnrollments([]));
+      return;
+    }
+    try {
+      const list = await enrollmentsClient.findMyEnrollments();
+      dispatch(setEnrollments(list));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    fetchCourses();
+  }, [currentUser]);
+  useEffect(() => {
+    fetchEnrollments();
+  }, [currentUser]);
 
   const coursesToShow =
     !currentUser
@@ -57,6 +85,22 @@ export default function Dashboard() {
       : showAllCourses
         ? courses
         : courses.filter((c: any) => isEnrolled(c._id));
+  const onAddNewCourse = async () => {
+    const newCourse = await client.createCourse(course);
+    dispatch(setCourses([...courses, newCourse]));
+  };
+
+  const onDeleteCourse = async (courseId: string) => {
+    const status = await client.deleteCourse(courseId);
+    dispatch(setCourses(courses.filter((course) => course._id !== courseId)));
+  };
+  const onUpdateCourse = async () => {
+    await client.updateCourse(course);
+    dispatch(setCourses(courses.map((c) => {
+        if (c._id === course._id) { return course; }
+        else { return c; }
+    })));};
+
 
   return (
     <div id="wd-dashboard">
@@ -83,13 +127,13 @@ export default function Dashboard() {
             <button
               className="btn btn-primary float-end"
               id="wd-add-new-course-click"
-              onClick={() => dispatch(addNewCourse(course))}
+              onClick={onAddNewCourse}
             >
               Add
             </button>
             <button
               className="btn btn-warning float-end me-2"
-              onClick={() => dispatch(updateCourse(course))}
+              onClick={onUpdateCourse}
               id="wd-update-course-click"
             >
               Update
@@ -164,14 +208,11 @@ export default function Dashboard() {
                           variant="danger"
                           className="float-end ms-2"
                           id={`wd-unenroll-${c._id}`}
-                          onClick={() =>
-                            dispatch(
-                              removeEnrollment({
-                                user: (currentUser as any)._id,
-                                course: c._id,
-                              })
-                            )
-                          }
+                          onClick={async () => {
+                            await enrollmentsClient.unenrollFromCourse(c._id);
+                            const list = await enrollmentsClient.findMyEnrollments();
+                            dispatch(setEnrollments(list));
+                          }}
                         >
                           Unenroll
                         </Button>
@@ -180,14 +221,11 @@ export default function Dashboard() {
                           variant="success"
                           className="float-end ms-2"
                           id={`wd-enroll-${c._id}`}
-                          onClick={() =>
-                            dispatch(
-                              addEnrollment({
-                                user: (currentUser as any)._id,
-                                course: c._id,
-                              })
-                            )
-                          }
+                          onClick={async () => {
+                            await enrollmentsClient.enrollInCourse(c._id);
+                            const list = await enrollmentsClient.findMyEnrollments();
+                            dispatch(setEnrollments(list));
+                          }}
                         >
                           Enroll
                         </Button>
@@ -197,7 +235,7 @@ export default function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          dispatch(deleteCourse(c._id));
+                          onDeleteCourse(course._id);
                         }}
                         className="btn btn-danger float-end"
                         id="wd-delete-course-click"
