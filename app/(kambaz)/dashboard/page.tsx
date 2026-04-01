@@ -114,7 +114,7 @@ export default function Dashboard() {
             id="wd-enrollments-btn"
             onClick={() => setShowAllCourses(!showAllCourses)}
           >
-            Enrollments
+            {showAllCourses ? "Show Enrolled Courses" : "Show All Courses"}
           </Button>
         )}
       </div>
@@ -190,7 +190,7 @@ export default function Dashboard() {
                     >
                       {c.description}
                     </CardText>
-                    {enrolled ? (
+                    {enrolled || isFaculty ? (
                       <Link
                         href={`/courses/${c._id}/home`}
                         className="wd-dashboard-course-link text-decoration-none"
@@ -235,7 +235,7 @@ export default function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          onDeleteCourse(course._id);
+                          onDeleteCourse(c._id);
                         }}
                         className="btn btn-danger float-end"
                         id="wd-delete-course-click"

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { setCurrentUser } from "./reducer";
 import { setEnrollments } from "../enrollments/reducer";
 import { useDispatch } from "react-redux";
+import axios from "axios";
 export default function Session({ children }: { children: any }) {
   const [pending, setPending] = useState(true);
   const dispatch = useDispatch();
@@ -18,7 +19,10 @@ export default function Session({ children }: { children: any }) {
         dispatch(setEnrollments([]));
       }
     } catch (err: any) {
-      console.error(err);
+      // 401 is normal before login; avoid noisy console errors.
+      if (!(axios.isAxiosError(err) && err.response?.status === 401)) {
+        console.error(err);
+      }
       dispatch(setCurrentUser(null));
       dispatch(setEnrollments([]));
     }

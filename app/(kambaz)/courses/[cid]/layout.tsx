@@ -17,6 +17,7 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { currentUser } = useSelector(
     (state: RootState) => state.accountReducer
   );
+  const isFaculty = currentUser && (currentUser as any).role === "FACULTY";
   const course = courses.find((c: any) => c._id === cid);
   const isEnrolled =
     currentUser &&
@@ -25,12 +26,12 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
     );
 
   useEffect(() => {
-    if (!currentUser || !isEnrolled) {
+    if (!currentUser || (!isFaculty && !isEnrolled)) {
       router.replace("/dashboard");
     }
-  }, [currentUser, isEnrolled, router]);
+  }, [currentUser, isFaculty, isEnrolled, router]);
 
-  if (!currentUser || !isEnrolled) {
+  if (!currentUser || (!isFaculty && !isEnrolled)) {
     return null;
   }
 
