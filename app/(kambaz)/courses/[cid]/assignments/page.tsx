@@ -70,11 +70,10 @@ export default function Assignments() {
   );
 
   const handleDeleteConfirm = async () => {
-    if (!deleteConfirmId) return;
+    if (!deleteConfirmId || !cid) return;
     await client.deleteAssignment(deleteConfirmId);
-    dispatch(
-      setAssignments(assignments.filter((a: Assignment) => a._id !== deleteConfirmId))
-    );
+    const list = await client.findAssignmentsForCourse(cid);
+    dispatch(setAssignments(list));
     setDeleteConfirmId(null);
   };
 

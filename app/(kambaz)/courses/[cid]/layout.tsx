@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useParams, useRouter } from "next/navigation";
 import { RootState } from "../../store";
 import { FaAlignJustify } from "react-icons/fa";
+import { isEnrolledInCourse } from "../../enrollments/reducer";
 
 export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { cid } = useParams();
@@ -20,10 +21,7 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
   const isFaculty = currentUser && (currentUser as any).role === "FACULTY";
   const course = courses.find((c: any) => c._id === cid);
   const isEnrolled =
-    currentUser &&
-    enrollments.some(
-      (e: any) => e.user === (currentUser as any)._id && e.course === cid
-    );
+    !!currentUser && isEnrolledInCourse(enrollments, cid as string);
 
   useEffect(() => {
     if (!currentUser || (!isFaculty && !isEnrolled)) {

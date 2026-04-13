@@ -2,7 +2,7 @@
 import { useState, useEffect, type ChangeEvent } from "react";
 import { FormControl } from "react-bootstrap";
 import { useParams } from "next/navigation";
-import PeopleTable from "../../courses/[cid]/people/table/page";
+import PeopleTable from "../../courses/[cid]/people/table/PeopleTable";
 import * as client from "../client";
 import { FaPlus } from "react-icons/fa";
 export default function Users() {

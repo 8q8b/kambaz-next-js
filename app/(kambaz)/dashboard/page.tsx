@@ -20,7 +20,7 @@ import {
   updateCourse,
   setCourses,
 } from "../courses/reducer";
-import { setEnrollments } from "../enrollments/reducer";
+import { setEnrollments, isEnrolledInCourse } from "../enrollments/reducer";
 import * as enrollmentsClient from "../enrollments/client";
 import { RootState } from "../store";
 
@@ -48,10 +48,7 @@ export default function Dashboard() {
   const isFaculty = currentUser && (currentUser as any).role === "FACULTY";
 
   const isEnrolled = (courseId: string) =>
-    currentUser &&
-    enrollments.some(
-      (e: any) => e.user === (currentUser as any)._id && e.course === courseId
-    );
+    !!currentUser && isEnrolledInCourse(enrollments, courseId);
   const fetchCourses = async () => {
     try {
       const courses = await client.fetchAllCourses();
