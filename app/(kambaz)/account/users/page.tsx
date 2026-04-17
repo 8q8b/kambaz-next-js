@@ -1,13 +1,11 @@
 "use client";
 import { useState, useEffect, type ChangeEvent } from "react";
 import { FormControl } from "react-bootstrap";
-import { useParams } from "next/navigation";
 import PeopleTable from "../../courses/[cid]/people/table/PeopleTable";
 import * as client from "../client";
 import { FaPlus } from "react-icons/fa";
 export default function Users() {
     const [users, setUsers] = useState<any[]>([]);
-    const { uid } = useParams();
     const [role, setRole] = useState("");
     const filterUsersByRole = async (role: string) => {
         setRole(role);
@@ -28,17 +26,30 @@ export default function Users() {
             fetchUsers();
         }
     };
+    const loadUsersForCurrentFilters = async () => {
+        if (role) {
+            setUsers(await client.findUsersByRole(role));
+        } else if (name) {
+            setUsers(await client.findUsersByPartialName(name));
+        } else {
+            setUsers(await client.findAllUsers());
+        }
+    };
+
     const createUser = async () => {
-        const user = await client.createUser({
+        const stamp = Date.now();
+        const username = `newuser${stamp}`;
+        await client.createUser({
             firstName: "New",
-            lastName: `User${users.length + 1}`,
-            username: `newuser${Date.now()}`,
+            lastName: `User${stamp}`,
+            username,
+            loginId: username,
             password: "password123",
-            email: `email${users.length + 1}@neu.edu`,
+            email: `email${stamp}@neu.edu`,
             section: "S101",
             role: "STUDENT",
         });
-        setUsers([...users, user]);
+        await loadUsersForCurrentFilters();
     };
 
     const fetchUsers = async () => {
@@ -46,8 +57,18 @@ export default function Users() {
         setUsers(users);
     };
     useEffect(() => {
-        fetchUsers();
-    }, [uid]);
+        let cancelled = false;
+        const load = async () => {
+            const list = await client.findAllUsers();
+            if (!cancelled) {
+                setUsers(list);
+            }
+        };
+        load();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
     return (
         <div>
             <button onClick={createUser} className="float-end btn btn-danger wd-add-people">

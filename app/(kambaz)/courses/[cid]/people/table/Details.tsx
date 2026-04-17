@@ -16,7 +16,17 @@ export default function PeopleDetails({ uid, onClose }: { uid: string | null; on
   const [name, setName] = useState("");
   const [editing, setEditing] = useState(false);
   const saveUser = async () => {
-    const [firstName, lastName] = name.split(" ");
+    const trimmed = name.trim();
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    let firstName = user.firstName ?? "";
+    let lastName = user.lastName ?? "";
+    if (parts.length === 1) {
+      firstName = parts[0];
+      lastName = "";
+    } else if (parts.length > 1) {
+      firstName = parts[0];
+      lastName = parts.slice(1).join(" ");
+    }
     const updatedUser = { ...user, firstName, lastName };
     await client.updateUser(updatedUser);
     setUser(updatedUser);
@@ -47,12 +57,18 @@ export default function PeopleDetails({ uid, onClose }: { uid: string | null; on
           <>
             <span
               className="wd-name"
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setName(`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim());
+                setEditing(true);
+              }}
             >
               {user.firstName} {user.lastName}
             </span>
             <FaPencil
-              onClick={() => setEditing(true)}
+              onClick={() => {
+                setName(`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim());
+                setEditing(true);
+              }}
               className="float-end fs-5 mt-2 wd-edit"
             />
           </>
@@ -61,11 +77,18 @@ export default function PeopleDetails({ uid, onClose }: { uid: string | null; on
           <FaCheck onClick={() => saveUser()}
               className="float-end fs-5 mt-2 me-2 wd-save" /> )}
         {user && editing && (
-          <FormControl className="w-50 wd-edit-name"
-            defaultValue={`${user.firstName} ${user.lastName}`}
+          <FormControl
+            className="w-50 wd-edit-name"
+            value={name}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === "Enter") { saveUser(); }}}/>)} </div>
+              if (e.key === "Enter") {
+                saveUser();
+              }
+            }}
+          />
+        )}
+      </div>
       <b>Roles:</b>           <span className="wd-roles">         {user.role}         </span> <br />
       <b>Login ID:</b>        <span className="wd-login-id">      {user.loginId}      </span> <br />
       <b>Section:</b>         <span className="wd-section">       {user.section}      </span> <br />
