@@ -51,7 +51,8 @@ export default function Dashboard() {
     !!currentUser && isEnrolledInCourse(enrollments, courseId);
   const fetchCourses = async () => {
     try {
-      const courses = await client.fetchAllCourses();
+      const courses =
+        currentUser && !showAllCourses ? await client.findMyCourses() : await client.fetchAllCourses();
       dispatch(setCourses(courses));
     } catch (error) {
       console.error(error);
@@ -71,17 +72,12 @@ export default function Dashboard() {
   };
   useEffect(() => {
     fetchCourses();
-  }, [currentUser]);
+  }, [currentUser, showAllCourses]);
   useEffect(() => {
     fetchEnrollments();
   }, [currentUser]);
 
-  const coursesToShow =
-    !currentUser
-      ? courses
-      : showAllCourses
-        ? courses
-        : courses.filter((c: any) => isEnrolled(c._id));
+  const coursesToShow = courses;
   const onAddNewCourse = async () => {
     const newCourse = await client.createCourse(course);
     dispatch(setCourses([...courses, newCourse]));
@@ -105,7 +101,7 @@ export default function Dashboard() {
         <h1 id="wd-dashboard-title" className="mb-0">
           Dashboard
         </h1>
-        {currentUser && (
+        {currentUser && !isFaculty && (
           <Button
             variant="primary"
             id="wd-enrollments-btn"
@@ -199,7 +195,7 @@ export default function Dashboard() {
                         Go
                       </Button>
                     )}
-                    {currentUser && (
+                    {currentUser && !isFaculty && (
                       enrolled ? (
                         <Button
                           variant="danger"
@@ -209,6 +205,7 @@ export default function Dashboard() {
                             await enrollmentsClient.unenrollFromCourse(c._id);
                             const list = await enrollmentsClient.findMyEnrollments();
                             dispatch(setEnrollments(list));
+                            await fetchCourses();
                           }}
                         >
                           Unenroll
@@ -222,6 +219,7 @@ export default function Dashboard() {
                             await enrollmentsClient.enrollInCourse(c._id);
                             const list = await enrollmentsClient.findMyEnrollments();
                             dispatch(setEnrollments(list));
+                            await fetchCourses();
                           }}
                         >
                           Enroll
