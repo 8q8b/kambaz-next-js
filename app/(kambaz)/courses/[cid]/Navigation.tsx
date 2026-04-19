@@ -34,9 +34,12 @@ export default function CourseNavigation({ cid }: { cid: string }) {
         const pathSegment = linkToPath(label);
         const href = `${base}/${pathSegment}`;
         const isPeople = label === "People";
+        const isQuizzes = label === "Quizzes";
         const isActive = isPeople
           ? pathname.startsWith(href) || pathname === `${base}/people`
-          : pathname === href || (label === "Home" && pathname === base);
+          : isQuizzes
+            ? pathname === href || pathname.startsWith(`${base}/quizzes/`)
+            : pathname === href || (label === "Home" && pathname === base);
         const id = `wd-course-${label.toLowerCase()}-link`;
 
         return (
