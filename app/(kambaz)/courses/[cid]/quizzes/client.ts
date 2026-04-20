@@ -15,6 +15,12 @@ export type Quiz = {
   availableFrom?: string;
   availableUntil?: string;
   dueDate?: string;
+  quizType?:
+    | "GRADED_QUIZ"
+    | "PRACTICE_QUIZ"
+    | "GRADED_SURVEY"
+    | "UNGRADED_SURVEY";
+  assignmentGroup?: "QUIZZES" | "EXAMS" | "ASSIGNMENTS" | "PROJECT";
   timeLimitMinutes?: number;
   shuffleQuestions?: boolean;
   oneQuestionAtATime?: boolean;
@@ -22,6 +28,8 @@ export type Quiz = {
   howManyAttempts?: number;
   accessCode?: string;
   showCorrectAnswers?: boolean;
+  webcamRequired?: boolean;
+  lockQuestionsAfterAnswering?: boolean;
   pointsPossible?: number;
 };
 

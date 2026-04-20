@@ -19,6 +19,32 @@ function apiErrorMessage(e: unknown, fallback: string) {
   return fallback;
 }
 
+function quizTypeLabel(value?: Quiz["quizType"]) {
+  switch (value) {
+    case "PRACTICE_QUIZ":
+      return "Practice Quiz";
+    case "GRADED_SURVEY":
+      return "Graded Survey";
+    case "UNGRADED_SURVEY":
+      return "Ungraded Survey";
+    default:
+      return "Graded Quiz";
+  }
+}
+
+function assignmentGroupLabel(value?: Quiz["assignmentGroup"]) {
+  switch (value) {
+    case "EXAMS":
+      return "Exams";
+    case "ASSIGNMENTS":
+      return "Assignments";
+    case "PROJECT":
+      return "Project";
+    default:
+      return "Quizzes";
+  }
+}
+
 export default function QuizDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -195,6 +221,17 @@ export default function QuizDetailsPage() {
                 : "None"}
             </div>
             <div>Access code: {quiz.accessCode ? "Required" : "None"}</div>
+          </div>
+        </div>
+        <div className="col-md-6">
+          <div className="border rounded p-3 h-100">
+            <div className="fw-bold text-muted small">Quiz settings</div>
+            <div>Quiz type: {quizTypeLabel(quiz.quizType)}</div>
+            <div>Assignment group: {assignmentGroupLabel(quiz.assignmentGroup)}</div>
+            <div>Webcam required: {quiz.webcamRequired ? "Yes" : "No"}</div>
+            <div>
+              Lock questions after answering: {quiz.lockQuestionsAfterAnswering ? "Yes" : "No"}
+            </div>
           </div>
         </div>
       </div>

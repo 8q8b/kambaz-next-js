@@ -8,6 +8,7 @@ import {
   FormCheck,
   FormControl,
   FormLabel,
+  FormSelect,
   Nav,
   Spinner,
   Tab,
@@ -60,6 +61,8 @@ export default function QuizEditorPage() {
     availableFrom: "",
     availableUntil: "",
     dueDate: "",
+    quizType: "GRADED_QUIZ" as NonNullable<Quiz["quizType"]>,
+    assignmentGroup: "QUIZZES" as NonNullable<Quiz["assignmentGroup"]>,
     timeLimitMinutes: 0,
     shuffleQuestions: false,
     oneQuestionAtATime: false,
@@ -67,6 +70,8 @@ export default function QuizEditorPage() {
     howManyAttempts: 1,
     accessCode: "",
     showCorrectAnswers: true,
+    webcamRequired: false,
+    lockQuestionsAfterAnswering: false,
   });
 
   useEffect(() => {
@@ -92,6 +97,8 @@ export default function QuizEditorPage() {
         availableFrom: q.availableFrom ?? "",
         availableUntil: q.availableUntil ?? "",
         dueDate: q.dueDate ?? "",
+        quizType: q.quizType ?? "GRADED_QUIZ",
+        assignmentGroup: q.assignmentGroup ?? "QUIZZES",
         timeLimitMinutes: q.timeLimitMinutes ?? 0,
         shuffleQuestions: !!q.shuffleQuestions,
         oneQuestionAtATime: !!q.oneQuestionAtATime,
@@ -99,6 +106,8 @@ export default function QuizEditorPage() {
         howManyAttempts: q.howManyAttempts ?? 1,
         accessCode: q.accessCode ?? "",
         showCorrectAnswers: q.showCorrectAnswers !== false,
+        webcamRequired: !!q.webcamRequired,
+        lockQuestionsAfterAnswering: !!q.lockQuestionsAfterAnswering,
       });
     } catch {
       setError("Unable to load quiz.");
@@ -128,6 +137,8 @@ export default function QuizEditorPage() {
         availableFrom: form.availableFrom || undefined,
         availableUntil: form.availableUntil || undefined,
         dueDate: form.dueDate || undefined,
+        quizType: form.quizType,
+        assignmentGroup: form.assignmentGroup,
         timeLimitMinutes: form.timeLimitMinutes,
         shuffleQuestions: form.shuffleQuestions,
         oneQuestionAtATime: form.oneQuestionAtATime,
@@ -135,6 +146,8 @@ export default function QuizEditorPage() {
         howManyAttempts: form.howManyAttempts,
         accessCode: form.accessCode || undefined,
         showCorrectAnswers: form.showCorrectAnswers,
+        webcamRequired: form.webcamRequired,
+        lockQuestionsAfterAnswering: form.lockQuestionsAfterAnswering,
       });
       setQuiz(updated);
       return true;
@@ -320,6 +333,43 @@ export default function QuizEditorPage() {
             </div>
 
             <div className="row">
+              <div className="col-md-6 mb-3">
+                <FormLabel>Quiz type</FormLabel>
+                <FormSelect
+                  value={form.quizType}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      quizType: e.target.value as NonNullable<Quiz["quizType"]>,
+                    })
+                  }
+                >
+                  <option value="GRADED_QUIZ">Graded Quiz</option>
+                  <option value="PRACTICE_QUIZ">Practice Quiz</option>
+                  <option value="GRADED_SURVEY">Graded Survey</option>
+                  <option value="UNGRADED_SURVEY">Ungraded Survey</option>
+                </FormSelect>
+              </div>
+              <div className="col-md-6 mb-3">
+                <FormLabel>Assignment group</FormLabel>
+                <FormSelect
+                  value={form.assignmentGroup}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      assignmentGroup: e.target.value as NonNullable<Quiz["assignmentGroup"]>,
+                    })
+                  }
+                >
+                  <option value="QUIZZES">Quizzes</option>
+                  <option value="EXAMS">Exams</option>
+                  <option value="ASSIGNMENTS">Assignments</option>
+                  <option value="PROJECT">Project</option>
+                </FormSelect>
+              </div>
+            </div>
+
+            <div className="row">
               <div className="col-md-4 mb-3">
                 <FormLabel>Time limit (minutes, 0 = none)</FormLabel>
                 <FormControl
@@ -376,6 +426,24 @@ export default function QuizEditorPage() {
               label="Allow multiple attempts"
               checked={form.multipleAttempts}
               onChange={(e) => setForm({ ...form, multipleAttempts: e.target.checked })}
+            />
+            <FormCheck
+              className="mb-2"
+              type="checkbox"
+              id="wd-webcam-required"
+              label="Webcam required"
+              checked={form.webcamRequired}
+              onChange={(e) => setForm({ ...form, webcamRequired: e.target.checked })}
+            />
+            <FormCheck
+              className="mb-2"
+              type="checkbox"
+              id="wd-lock-after-answering"
+              label="Lock questions after answering"
+              checked={form.lockQuestionsAfterAnswering}
+              onChange={(e) =>
+                setForm({ ...form, lockQuestionsAfterAnswering: e.target.checked })
+              }
             />
             <FormCheck
               className="mb-3"
