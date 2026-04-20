@@ -18,6 +18,28 @@ body * {
     /* must match sidebar width */
 }
 
+#wd-quizzes,
+#wd-quiz-details,
+#wd-quiz-editor,
+#wd-quiz-preview,
+#wd-quiz-take,
+#wd-quiz-result,
+#wd-quizzes *,
+#wd-quiz-details *,
+#wd-quiz-editor *,
+#wd-quiz-preview *,
+#wd-quiz-take *,
+#wd-quiz-result * {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.wd-quiz-admin-btn {
+  min-height: 38px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
 .list-group.wd>.list-group-item.active {
     color: black;
     background-color: white;

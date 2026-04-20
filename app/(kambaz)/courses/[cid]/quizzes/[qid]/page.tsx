@@ -143,19 +143,19 @@ export default function QuizDetailsPage() {
         </div>
         <div className="d-flex flex-wrap gap-2">
           <Link href={`/courses/${cid}/quizzes`}>
-            <Button variant="secondary" size="sm">
+            <Button variant="secondary" size="sm" className={isFaculty ? "wd-quiz-admin-btn" : undefined}>
               All quizzes
             </Button>
           </Link>
           {isFaculty && (
             <>
               <Link href={`/courses/${cid}/quizzes/${qid}/edit`}>
-                <Button variant="danger" size="sm">
+                <Button variant="danger" size="sm" className="wd-quiz-admin-btn">
                   Edit
                 </Button>
               </Link>
               <Link href={`/courses/${cid}/quizzes/${qid}/preview`}>
-                <Button variant="outline-danger" size="sm">
+                <Button variant="outline-danger" size="sm" className="wd-quiz-admin-btn">
                   Preview
                 </Button>
               </Link>

@@ -120,12 +120,13 @@ export default function QuestionEditorCard({
           <Button
             variant="outline-danger"
             size="sm"
+            className="wd-quiz-admin-btn"
             onClick={handleDelete}
             disabled={saving}
           >
             Delete
           </Button>
-          <Button variant="danger" size="sm" onClick={handleSave} disabled={saving}>
+          <Button variant="danger" size="sm" className="wd-quiz-admin-btn" onClick={handleSave} disabled={saving}>
             {saving ? "Saving…" : "Save"}
           </Button>
         </div>
@@ -192,6 +193,7 @@ export default function QuestionEditorCard({
           <Button
             variant="outline-secondary"
             size="sm"
+            className="wd-quiz-admin-btn"
             onClick={() =>
               setDraft({
                 ...draft,

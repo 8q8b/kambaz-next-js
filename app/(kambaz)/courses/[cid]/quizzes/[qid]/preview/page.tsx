@@ -97,12 +97,12 @@ export default function QuizPreviewPage() {
         <h4 className="mb-0">Preview: {quiz?.title ?? "Quiz"}</h4>
         <div className="d-flex gap-2">
           <Link href={`/courses/${cid}/quizzes/${qid}/edit`}>
-            <Button variant="outline-secondary" size="sm">
+            <Button variant="outline-secondary" size="sm" className="wd-quiz-admin-btn">
               Edit quiz
             </Button>
           </Link>
           <Link href={`/courses/${cid}/quizzes/${qid}`}>
-            <Button variant="secondary" size="sm">
+            <Button variant="secondary" size="sm" className="wd-quiz-admin-btn">
               Details
             </Button>
           </Link>

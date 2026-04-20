@@ -236,12 +236,12 @@ export default function QuizEditorPage() {
         </div>
         <div className="d-flex flex-wrap gap-2">
           <Link href={`/courses/${cid}/quizzes/${qid}/preview`}>
-            <Button variant="outline-secondary" size="sm">
+            <Button variant="outline-secondary" size="sm" className="wd-quiz-admin-btn">
               Preview
             </Button>
           </Link>
           <Link href={`/courses/${cid}/quizzes/${qid}`}>
-            <Button variant="outline-secondary" size="sm">
+            <Button variant="outline-secondary" size="sm" className="wd-quiz-admin-btn">
               Details
             </Button>
           </Link>
@@ -393,6 +393,7 @@ export default function QuizEditorPage() {
                 <Button
                   size="sm"
                   variant="outline-danger"
+                  className="wd-quiz-admin-btn"
                   disabled={saving}
                   onClick={() => addQuestion("multiple_choice")}
                 >
@@ -401,6 +402,7 @@ export default function QuizEditorPage() {
                 <Button
                   size="sm"
                   variant="outline-danger"
+                  className="wd-quiz-admin-btn"
                   disabled={saving}
                   onClick={() => addQuestion("true_false")}
                 >
@@ -409,6 +411,7 @@ export default function QuizEditorPage() {
                 <Button
                   size="sm"
                   variant="outline-danger"
+                  className="wd-quiz-admin-btn"
                   disabled={saving}
                   onClick={() => addQuestion("fill_blank")}
                 >
@@ -416,10 +419,10 @@ export default function QuizEditorPage() {
                 </Button>
               </div>
               <div className="d-flex gap-2">
-                <Button variant="secondary" size="sm" onClick={handleCancel} disabled={saving}>
+                <Button variant="secondary" size="sm" className="wd-quiz-admin-btn" onClick={handleCancel} disabled={saving}>
                   Cancel
                 </Button>
-                <Button variant="danger" size="sm" onClick={handleSave} disabled={saving}>
+                <Button variant="danger" size="sm" className="wd-quiz-admin-btn" onClick={handleSave} disabled={saving}>
                   Save quiz
                 </Button>
               </div>
