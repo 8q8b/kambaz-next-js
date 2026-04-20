@@ -70,16 +70,12 @@ export default function QuizzesPage() {
       if (!isFaculty) {
         const withAttempts = await Promise.all(
           enriched.map(async (q) => {
-            try {
-              const a = await client.findLastQuizAttempt(q._id);
-              return {
-                ...q,
-                lastScore: a.score ?? null,
-                lastMax: a.maxScore ?? null,
-              };
-            } catch {
-              return { ...q, lastScore: null, lastMax: null };
-            }
+            const a = await client.findLastQuizAttempt(q._id);
+            return {
+              ...q,
+              lastScore: a?.score ?? null,
+              lastMax: a?.maxScore ?? null,
+            };
           })
         );
         setQuizzes(withAttempts);

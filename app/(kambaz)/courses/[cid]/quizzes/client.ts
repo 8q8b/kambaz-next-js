@@ -120,16 +120,85 @@ export const deleteQuestion = async (questionId: string) => {
   await axiosWithCredentials.delete(`${QUESTIONS_API}/${questionId}`);
 };
 
+export type AttemptAnswerPayload = {
+  question: string;
+  selectedChoiceId?: string;
+  booleanAnswer?: boolean;
+  textAnswer?: string;
+};
+
+export type QuizAttemptAnswer = AttemptAnswerPayload & {
+  isCorrect?: boolean;
+  pointsEarned?: number;
+  pointsPossible?: number;
+};
+
 export type QuizAttempt = {
   _id: string;
+  quiz?: string;
+  user?: string;
+  attemptNumber?: number;
+  status?: string;
+  startedAt?: string;
+  submittedAt?: string;
   score?: number;
   maxScore?: number;
-  status?: string;
+  answers?: QuizAttemptAnswer[];
 };
 
 export const findLastQuizAttempt = async (quizId: string) => {
+  try {
+    const { data } = await axiosWithCredentials.get<QuizAttempt>(
+      `${QUIZZES_API}/${quizId}/attempts/last`
+    );
+    return data;
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      return null;
+    }
+    throw e;
+  }
+};
+
+export const findInProgressQuizAttempt = async (quizId: string) => {
+  try {
+    const { data } = await axiosWithCredentials.get<QuizAttempt>(
+      `${QUIZZES_API}/${quizId}/attempts/in-progress`
+    );
+    return data;
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      return null;
+    }
+    throw e;
+  }
+};
+
+export const startQuizAttempt = async (
+  quizId: string,
+  body?: { accessCode?: string }
+) => {
+  const { data } = await axiosWithCredentials.post<QuizAttempt>(
+    `${QUIZZES_API}/${quizId}/attempts`,
+    body ?? {}
+  );
+  return data;
+};
+
+export const getQuizAttemptById = async (attemptId: string) => {
   const { data } = await axiosWithCredentials.get<QuizAttempt>(
-    `${QUIZZES_API}/${quizId}/attempts/last`
+    `${HTTP_SERVER}/api/quiz-attempts/${attemptId}`
+  );
+  return data;
+};
+
+export const submitQuizAttempt = async (
+  attemptId: string,
+  answers: AttemptAnswerPayload[]
+) => {
+  const { data } = await axiosWithCredentials.post<QuizAttempt>(
+    `${HTTP_SERVER}/api/quiz-attempts/${attemptId}/submit`,
+    { answers }
   );
   return data;
 };

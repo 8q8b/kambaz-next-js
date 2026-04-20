@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Button, Spinner } from "react-bootstrap";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, Button, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../../store";
 import * as client from "../../client";
 import type { Question, Quiz } from "../../client";
+import QuizQuestionForm from "../../QuizQuestionForm";
+import type { AnswerState } from "../../quizTakingHelpers";
+import { scoreAllForPreview, shuffleQuestions } from "../../quizTakingHelpers";
 
 export default function QuizPreviewPage() {
   const params = useParams();
@@ -33,6 +36,8 @@ export default function QuizPreviewPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
+  const [answers, setAnswers] = useState<AnswerState>({});
+  const [graded, setGraded] = useState<ReturnType<typeof scoreAllForPreview> | null>(null);
 
   useEffect(() => {
     if (!isFaculty && cid) {
@@ -63,6 +68,26 @@ export default function QuizPreviewPage() {
     };
   }, [qid, isFaculty]);
 
+  const orderedQuestions = useMemo(() => {
+    const sorted = [...questions].sort((a, b) => a.order - b.order);
+    if (!quiz?.shuffleQuestions || !qid) return sorted;
+    return shuffleQuestions(sorted, `preview-${qid}`);
+  }, [questions, quiz?.shuffleQuestions, qid]);
+
+  const updateAnswer = (questionId: string, next: AnswerState[string]) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: next }));
+    setGraded(null);
+  };
+
+  const handleGradePreview = () => {
+    setGraded(scoreAllForPreview(orderedQuestions, answers));
+  };
+
+  const handleReset = () => {
+    setAnswers({});
+    setGraded(null);
+  };
+
   if (!cid || !qid) return null;
   if (!isFaculty) return null;
 
@@ -83,10 +108,11 @@ export default function QuizPreviewPage() {
           </Link>
         </div>
       </div>
-      <p className="text-muted small">
-        Faculty preview is read-only. Student attempts and grading run through the take
-        flow without persisting from this screen.
-      </p>
+      <Alert variant="info" className="py-2 small">
+        This preview does not save attempts or grades to the server. Use{" "}
+        <strong>Grade preview</strong> to score your answers in the browser (same rules as
+        the live quiz).
+      </Alert>
 
       {loading ? (
         <div className="text-muted">
@@ -94,40 +120,60 @@ export default function QuizPreviewPage() {
           Loading…
         </div>
       ) : (
-        <ol className="ps-3">
-          {questions.map((question, idx) => (
-            <li key={question._id} className="mb-4">
-              <div className="fw-bold">
-                Q{idx + 1}. {question.prompt}{" "}
-                <span className="text-muted">({question.points} pts)</span>
-              </div>
-              {question.type === "multiple_choice" && (
-                <ul>
-                  {(question.choices || []).map((c) => (
-                    <li key={c._id}>
-                      {c.text}
-                      {c.isCorrect ? (
-                        <span className="text-success ms-2">(correct)</span>
-                      ) : null}
+        <>
+          <ol className="ps-3">
+            {orderedQuestions.map((question, idx) => (
+              <li key={question._id} className="mb-4">
+                <div className="fw-semibold">
+                  Q{idx + 1}. {question.prompt}{" "}
+                  <span className="text-muted">({question.points} pts)</span>
+                </div>
+                <QuizQuestionForm
+                  question={question}
+                  value={answers[question._id] || {}}
+                  onChange={(next) => updateAnswer(question._id, next)}
+                />
+              </li>
+            ))}
+          </ol>
+
+          <div className="d-flex flex-wrap gap-2 mb-4">
+            <Button variant="danger" onClick={handleGradePreview}>
+              Grade preview
+            </Button>
+            <Button variant="outline-secondary" onClick={handleReset}>
+              Reset answers
+            </Button>
+          </div>
+
+          {graded ? (
+            <div className="border rounded p-3 bg-light">
+              <h5 className="mb-2">Preview score</h5>
+              <p className="mb-3">
+                <strong>
+                  {graded.score} / {graded.maxScore}
+                </strong>
+              </p>
+              <ul className="list-unstyled mb-0 small">
+                {graded.perQuestion.map((row) => {
+                  const q = orderedQuestions.find((x) => x._id === row.questionId);
+                  return (
+                    <li key={row.questionId} className="mb-2">
+                      <span className={row.isCorrect ? "text-success" : "text-danger"}>
+                        {row.isCorrect ? "✓" : "✗"}
+                      </span>{" "}
+                      <span className="text-muted">
+                        ({row.pointsEarned}/{row.pointsPossible} pts)
+                      </span>{" "}
+                      {q ? q.prompt.slice(0, 80) : row.questionId}
+                      {q && q.prompt.length > 80 ? "…" : ""}
                     </li>
-                  ))}
-                </ul>
-              )}
-              {question.type === "true_false" && (
-                <div>
-                  Correct:{" "}
-                  <strong>{question.correctBoolean === true ? "True" : "False"}</strong>
-                </div>
-              )}
-              {question.type === "fill_blank" && (
-                <div>
-                  Acceptable:{" "}
-                  <strong>{(question.acceptableAnswers || []).join(", ")}</strong>
-                </div>
-              )}
-            </li>
-          ))}
-        </ol>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );

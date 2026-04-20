@@ -18,7 +18,8 @@ export default function CoursesLayout({ children }: { children: ReactNode }) {
   const { currentUser } = useSelector(
     (state: RootState) => state.accountReducer
   );
-  const isFaculty = currentUser && (currentUser as any).role === "FACULTY";
+  const role = currentUser ? (currentUser as { role?: string }).role : undefined;
+  const isFaculty = !!currentUser && (role === "FACULTY" || role === "ADMIN");
   const course = courses.find((c: any) => c._id === cid);
   const isEnrolled =
     !!currentUser && isEnrolledInCourse(enrollments, cid as string);

@@ -1,17 +1,27 @@
 "use client";
 
+import axios from "axios";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Spinner } from "react-bootstrap";
+import { Alert, Button, Form, Spinner } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../../store";
 import * as client from "../client";
-import type { Quiz } from "../client";
-import { availabilityLabel, formatShortDate } from "../availability";
+import type { Quiz, QuizAttempt } from "../client";
+import { availabilityLabel, formatShortDate, getAvailabilityState } from "../availability";
+import { canStartNewSubmittedAttempt } from "../quizTakingHelpers";
+
+function apiErrorMessage(e: unknown, fallback: string) {
+  if (axios.isAxiosError(e) && typeof e.response?.data?.message === "string") {
+    return e.response.data.message;
+  }
+  return fallback;
+}
 
 export default function QuizDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const cid =
     typeof params.cid === "string"
       ? params.cid
@@ -33,6 +43,11 @@ export default function QuizDetailsPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inProgress, setInProgress] = useState<QuizAttempt | null>(null);
+  const [lastSubmitted, setLastSubmitted] = useState<QuizAttempt | null>(null);
+  const [accessCode, setAccessCode] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     if (!qid) return;
@@ -43,6 +58,19 @@ export default function QuizDetailsPage() {
       try {
         const data = await client.findQuizById(qid);
         if (!cancelled) setQuiz(data);
+        if (!cancelled && !isFaculty) {
+          const [ip, last] = await Promise.all([
+            client.findInProgressQuizAttempt(qid),
+            client.findLastQuizAttempt(qid),
+          ]);
+          if (!cancelled) {
+            setInProgress(ip);
+            setLastSubmitted(last);
+          }
+        } else if (!cancelled) {
+          setInProgress(null);
+          setLastSubmitted(null);
+        }
       } catch {
         if (!cancelled) setError("Unable to load this quiz.");
       } finally {
@@ -52,7 +80,7 @@ export default function QuizDetailsPage() {
     return () => {
       cancelled = true;
     };
-  }, [qid]);
+  }, [qid, isFaculty]);
 
   if (!cid || !qid) {
     return null;
@@ -77,6 +105,31 @@ export default function QuizDetailsPage() {
       </div>
     );
   }
+
+  const availability = getAvailabilityState(quiz);
+  const needsCode = !!(quiz.accessCode && String(quiz.accessCode).trim() !== "");
+  const canTakeWindow = availability === "open";
+  const canStartMore =
+    !isFaculty &&
+    quiz.published &&
+    canTakeWindow &&
+    !inProgress &&
+    canStartNewSubmittedAttempt(quiz, lastSubmitted);
+
+  const handleStartQuiz = async () => {
+    if (!qid || !cid) return;
+    setActionError(null);
+    setStarting(true);
+    try {
+      const body = needsCode ? { accessCode: accessCode.trim() } : undefined;
+      const att = await client.startQuizAttempt(qid, body);
+      router.push(`/courses/${cid}/quizzes/${qid}/take?attempt=${att._id}`);
+    } catch (e) {
+      setActionError(apiErrorMessage(e, "Could not start the quiz."));
+    } finally {
+      setStarting(false);
+    }
+  };
 
   return (
     <div id="wd-quiz-details" className="p-3">
@@ -147,9 +200,80 @@ export default function QuizDetailsPage() {
       </div>
 
       {!isFaculty && (
-        <div className="mt-4 p-3 bg-light border rounded">
-          <strong>Students:</strong> taking and reviewing graded attempts will appear
-          here in the quiz-taking flow.
+        <div className="mt-4 p-3 border rounded">
+          <h5 className="mb-3">Take this quiz</h5>
+          {!quiz.published ? (
+            <p className="text-muted mb-0">This quiz is not published yet.</p>
+          ) : !canTakeWindow ? (
+            <p className="text-muted mb-0">
+              {availability === "not_yet"
+                ? "This quiz is not available yet."
+                : "This quiz is closed."}
+            </p>
+          ) : (
+            <>
+              {actionError ? <Alert variant="danger">{actionError}</Alert> : null}
+              {needsCode ? (
+                <Form.Group className="mb-3" controlId="wd-quiz-access-code">
+                  <Form.Label>Access code</Form.Label>
+                  <Form.Control
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    autoComplete="off"
+                    placeholder="Enter the code from your instructor"
+                  />
+                </Form.Group>
+              ) : null}
+
+              <div className="d-flex flex-wrap gap-2">
+                {inProgress ? (
+                  <Link
+                    href={`/courses/${cid}/quizzes/${qid}/take?attempt=${inProgress._id}`}
+                    className="btn btn-danger"
+                  >
+                    Continue quiz
+                  </Link>
+                ) : canStartMore ? (
+                  <Button
+                    variant="danger"
+                    disabled={starting || (needsCode && accessCode.trim() === "")}
+                    onClick={() => void handleStartQuiz()}
+                  >
+                    {starting ? (
+                      <>
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Starting…
+                      </>
+                    ) : (
+                      "Start quiz"
+                    )}
+                  </Button>
+                ) : (
+                  <span className="text-muted">No attempts remaining.</span>
+                )}
+
+                {lastSubmitted ? (
+                  <Link
+                    href={`/courses/${cid}/quizzes/${qid}/result?attempt=${lastSubmitted._id}`}
+                    className="btn btn-outline-secondary"
+                  >
+                    View last submission
+                  </Link>
+                ) : null}
+              </div>
+
+              {lastSubmitted &&
+              typeof lastSubmitted.score === "number" &&
+              typeof lastSubmitted.maxScore === "number" ? (
+                <div className="text-muted small mt-2">
+                  Last score:{" "}
+                  <strong>
+                    {lastSubmitted.score} / {lastSubmitted.maxScore}
+                  </strong>
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
       )}
     </div>
