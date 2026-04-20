@@ -38,6 +38,7 @@ export default function QuizPreviewPage() {
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<AnswerState>({});
   const [graded, setGraded] = useState<ReturnType<typeof scoreAllForPreview> | null>(null);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     if (!isFaculty && cid) {
@@ -73,6 +74,11 @@ export default function QuizPreviewPage() {
     if (!quiz?.shuffleQuestions || !qid) return sorted;
     return shuffleQuestions(sorted, `preview-${qid}`);
   }, [questions, quiz?.shuffleQuestions, qid]);
+
+  const oneAt = !!quiz?.oneQuestionAtATime;
+  const visibleQuestions = oneAt
+    ? orderedQuestions.slice(step, step + 1)
+    : orderedQuestions;
 
   const updateAnswer = (questionId: string, next: AnswerState[string]) => {
     setAnswers((prev) => ({ ...prev, [questionId]: next }));
@@ -121,11 +127,18 @@ export default function QuizPreviewPage() {
         </div>
       ) : (
         <>
+          {oneAt && orderedQuestions.length > 0 && (
+            <div className="mb-3 text-muted small">
+              Question {step + 1} of {orderedQuestions.length}
+            </div>
+          )}
           <ol className="ps-3">
-            {orderedQuestions.map((question, idx) => (
+            {visibleQuestions.map((question, idx) => {
+              const displayIndex = oneAt ? step + idx + 1 : orderedQuestions.indexOf(question) + 1;
+              return (
               <li key={question._id} className="mb-4">
                 <div className="fw-semibold">
-                  Q{idx + 1}. {question.prompt}{" "}
+                  Question {displayIndex}. {question.prompt}{" "}
                   <span className="text-muted">({question.points} pts)</span>
                 </div>
                 <QuizQuestionForm
@@ -134,8 +147,32 @@ export default function QuizPreviewPage() {
                   onChange={(next) => updateAnswer(question._id, next)}
                 />
               </li>
-            ))}
+            );
+            })}
           </ol>
+
+          {oneAt && orderedQuestions.length > 0 ? (
+            <div className="d-flex gap-2 mb-4">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="wd-quiz-admin-btn"
+                disabled={step === 0}
+                onClick={() => setStep((s) => Math.max(0, s - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="wd-quiz-admin-btn"
+                disabled={step >= orderedQuestions.length - 1}
+                onClick={() => setStep((s) => Math.min(orderedQuestions.length - 1, s + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          ) : null}
 
           <div className="d-flex flex-wrap gap-2 mb-4">
             <Button variant="danger" onClick={handleGradePreview}>
