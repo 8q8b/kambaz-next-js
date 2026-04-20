@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Dropdown,
@@ -26,6 +26,14 @@ type RowQuiz = Quiz & {
   questionCount?: number;
 };
 
+type SortMode = "available" | "due" | "name";
+
+function parseDateValue(value?: string) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  const n = new Date(value).getTime();
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
 export default function QuizzesPage() {
   const params = useParams();
   const router = useRouter();
@@ -45,6 +53,7 @@ export default function QuizzesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>("available");
 
   const load = async () => {
     if (!cid) return;
@@ -91,9 +100,24 @@ export default function QuizzesPage() {
     load();
   }, [cid, isFaculty]);
 
-  const filtered = quizzes.filter((q) =>
-    q.title.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    const bySearch = quizzes.filter((q) => q.title.toLowerCase().includes(query));
+    const sorted = [...bySearch].sort((a, b) => {
+      if (sortMode === "name") {
+        return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+      }
+      if (sortMode === "due") {
+        const diff = parseDateValue(a.dueDate) - parseDateValue(b.dueDate);
+        if (diff !== 0) return diff;
+        return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+      }
+      const diff = parseDateValue(a.availableFrom) - parseDateValue(b.availableFrom);
+      if (diff !== 0) return diff;
+      return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+    });
+    return sorted;
+  }, [quizzes, search, sortMode]);
 
   const handleAddQuiz = async () => {
     if (!cid || !isFaculty) return;
@@ -131,10 +155,43 @@ export default function QuizzesPage() {
           />
         </InputGroup>
         {isFaculty && (
-          <Button variant="danger" size="lg" onClick={handleAddQuiz} id="wd-add-quiz">
-            <FaPlus className="me-2" />
-            Quiz
-          </Button>
+          <div className="d-flex align-items-center gap-2">
+            <Button variant="danger" size="lg" onClick={handleAddQuiz} id="wd-add-quiz">
+              <FaPlus className="me-2" />
+              Quiz
+            </Button>
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="secondary"
+                size="lg"
+                id="wd-quizzes-sort-menu"
+                aria-label="Sort quizzes"
+              >
+                <FaEllipsisV />
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Header>Sort</Dropdown.Header>
+                <Dropdown.Item
+                  active={sortMode === "available"}
+                  onClick={() => setSortMode("available")}
+                >
+                  Available Date
+                </Dropdown.Item>
+                <Dropdown.Item
+                  active={sortMode === "due"}
+                  onClick={() => setSortMode("due")}
+                >
+                  Due Date
+                </Dropdown.Item>
+                <Dropdown.Item
+                  active={sortMode === "name"}
+                  onClick={() => setSortMode("name")}
+                >
+                  Name
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
         )}
       </div>
 
