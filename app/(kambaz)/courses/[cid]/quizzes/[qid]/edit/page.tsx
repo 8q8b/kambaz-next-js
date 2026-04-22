@@ -54,6 +54,7 @@ export default function QuizEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"details" | "questions">("details");
+  const [hasTimeLimit, setHasTimeLimit] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -109,6 +110,7 @@ export default function QuizEditorPage() {
         webcamRequired: !!q.webcamRequired,
         lockQuestionsAfterAnswering: !!q.lockQuestionsAfterAnswering,
       });
+      setHasTimeLimit((q.timeLimitMinutes ?? 0) > 0);
     } catch {
       setError("Unable to load quiz.");
     } finally {
@@ -139,7 +141,7 @@ export default function QuizEditorPage() {
         dueDate: form.dueDate || undefined,
         quizType: form.quizType,
         assignmentGroup: form.assignmentGroup,
-        timeLimitMinutes: form.timeLimitMinutes,
+        timeLimitMinutes: hasTimeLimit ? form.timeLimitMinutes : 0,
         shuffleQuestions: form.shuffleQuestions,
         oneQuestionAtATime: form.oneQuestionAtATime,
         multipleAttempts: form.multipleAttempts,
@@ -161,7 +163,7 @@ export default function QuizEditorPage() {
 
   const handleSave = async () => {
     const ok = await persistMetadata();
-    if (ok && cid) router.push(`/courses/${cid}/quizzes`);
+    if (ok && cid) router.push(`/courses/${cid}/quizzes/${qid}`);
   };
 
   const handleSaveAndPublish = async () => {
@@ -184,7 +186,7 @@ export default function QuizEditorPage() {
     if (cid) router.push(`/courses/${cid}/quizzes`);
   };
 
-  const addQuestion = async (type: Question["type"]) => {
+  const addQuestion = async (type: Question["type"] = "multiple_choice") => {
     if (!qid) return;
     setSaving(true);
     setError(null);
@@ -371,13 +373,34 @@ export default function QuizEditorPage() {
 
             <div className="row">
               <div className="col-md-4 mb-3">
-                <FormLabel>Time limit (minutes, 0 = none)</FormLabel>
+                <FormCheck
+                  className="mb-2"
+                  type="checkbox"
+                  id="wd-time-limit-enabled"
+                  label="Time limit"
+                  checked={hasTimeLimit}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setHasTimeLimit(checked);
+                    setForm({
+                      ...form,
+                      timeLimitMinutes: checked
+                        ? form.timeLimitMinutes > 0
+                          ? form.timeLimitMinutes
+                          : 20
+                        : 0,
+                    });
+                  }}
+                />
+                <FormLabel>Minutes</FormLabel>
                 <FormControl
                   type="number"
-                  value={form.timeLimitMinutes}
+                  min={1}
+                  value={hasTimeLimit ? form.timeLimitMinutes : ""}
+                  disabled={!hasTimeLimit}
                   onChange={(e) => {
                     const n = parseInt(e.target.value, 10);
-                    setForm({ ...form, timeLimitMinutes: Number.isFinite(n) ? n : 0 });
+                    setForm({ ...form, timeLimitMinutes: Number.isFinite(n) ? Math.max(1, n) : 1 });
                   }}
                 />
               </div>
@@ -457,35 +480,15 @@ export default function QuizEditorPage() {
 
           <Tab.Pane eventKey="questions">
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-              <div className="btn-group">
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  className="wd-quiz-admin-btn"
-                  disabled={saving}
-                  onClick={() => addQuestion("multiple_choice")}
-                >
-                  + Multiple choice
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  className="wd-quiz-admin-btn"
-                  disabled={saving}
-                  onClick={() => addQuestion("true_false")}
-                >
-                  + True/False
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline-danger"
-                  className="wd-quiz-admin-btn"
-                  disabled={saving}
-                  onClick={() => addQuestion("fill_blank")}
-                >
-                  + Fill blank
-                </Button>
-              </div>
+              <Button
+                size="sm"
+                variant="outline-danger"
+                className="wd-quiz-admin-btn"
+                disabled={saving}
+                onClick={() => addQuestion()}
+              >
+                + New Question
+              </Button>
               <div className="d-flex gap-2">
                 <Button variant="secondary" size="sm" className="wd-quiz-admin-btn" onClick={handleCancel} disabled={saving}>
                   Cancel
@@ -497,7 +500,7 @@ export default function QuizEditorPage() {
             </div>
 
             {questions.length === 0 ? (
-              <p className="text-muted">No questions yet. Add one using the buttons above.</p>
+              <p className="text-muted">No questions yet. Add one using the button above.</p>
             ) : (
               questions.map((q) => (
                 <QuestionEditorCard

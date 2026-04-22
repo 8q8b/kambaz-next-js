@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, FormControl, FormLabel, InputGroup } from "react-bootstrap";
+import { Button, FormControl, FormLabel, FormSelect, InputGroup } from "react-bootstrap";
 import type { Question, QuestionChoice } from "./client";
 import * as client from "./client";
 
@@ -13,6 +13,31 @@ function newChoice(): QuestionChoice {
         : `c-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     text: "",
     isCorrect: false,
+  };
+}
+
+function getDefaultFields(type: Question["type"]) {
+  if (type === "multiple_choice") {
+    return {
+      choices: [
+        { ...newChoice(), text: "Option A", isCorrect: true },
+        { ...newChoice(), text: "Option B", isCorrect: false },
+      ],
+      correctBoolean: undefined,
+      acceptableAnswers: [],
+    };
+  }
+  if (type === "true_false") {
+    return {
+      choices: [],
+      correctBoolean: true,
+      acceptableAnswers: [],
+    };
+  }
+  return {
+    choices: [],
+    correctBoolean: undefined,
+    acceptableAnswers: ["answer"],
   };
 }
 
@@ -110,6 +135,11 @@ export default function QuestionEditorCard({
     }
   };
 
+  const handleCancel = () => {
+    setError(null);
+    setDraft(question);
+  };
+
   return (
     <div className="border rounded p-3 mb-3 bg-light">
       <div className="d-flex justify-content-between align-items-start mb-2">
@@ -117,6 +147,15 @@ export default function QuestionEditorCard({
           {draft.type.replace(/_/g, " ")} · {draft._id.slice(0, 8)}…
         </div>
         <div className="d-flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="wd-quiz-admin-btn"
+            onClick={handleCancel}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
           <Button
             variant="outline-danger"
             size="sm"
@@ -133,7 +172,25 @@ export default function QuestionEditorCard({
       </div>
       {error && <div className="text-danger small mb-2">{error}</div>}
 
-      <FormLabel className="fw-bold">Prompt</FormLabel>
+      <FormLabel className="fw-bold">Question type</FormLabel>
+      <FormSelect
+        className="mb-2"
+        value={draft.type}
+        onChange={(e) => {
+          const nextType = e.target.value as Question["type"];
+          setDraft({
+            ...draft,
+            type: nextType,
+            ...getDefaultFields(nextType),
+          });
+        }}
+      >
+        <option value="multiple_choice">Multiple choice</option>
+        <option value="true_false">True/False</option>
+        <option value="fill_blank">Fill in the blank</option>
+      </FormSelect>
+
+      <FormLabel className="fw-bold">Title</FormLabel>
       <FormControl
         className="mb-2"
         value={draft.prompt}
